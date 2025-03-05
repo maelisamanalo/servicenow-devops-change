@@ -24,31 +24,58 @@ jobs:
           echo Add other actions to build,
           echo test, and deploy your project.
     
-  changeApproval:
-      name: ServiceNow Change Approval
-      needs: hello
-      runs-on: ubuntu-latest
+  #changeApproval:
+  #    name: ServiceNow Change Approval
+   #    needs: hello
+   #    runs-on: ubuntu-latest
 
-      steps:     
-      - name: ServiceNow Change Approval
-        uses: ServiceNow/servicenow-devops-change@v3.1.0
-        id: create
-        with:
-          devops-integration-user-name: ${{ secrets.SN_DEVOPS_USER }}
-          devops-integration-user-password: ${{ secrets.SN_DEVOPS_PASSWORD }}
-          instance-url: ${{ secrets.SN_INSTANCE_URL }}
-          tool-id: ${{ secrets.SN_ORCHESTRATION_TOOL_ID }}
-          context-github: ${{ toJSON(github) }}
-          job-name: 'ServiceNow Change Approval'
-          change-request: '{"setCloseCode":"true","attributes":{"short_description":"Automated Software Deployment","description":"Automated Software Deployment.","assignment_group":"a715cd759f2002002920bde8132e7018","implementation_plan":"Software update is tested and results can be found in Test Summaries Tab; When the change is approved the implementation happens automated by the CICD pipeline within the change planned start and end time window.","backout_plan":"When software fails in production, the previous software release will be re-deployed.","test_plan":"Testing if the software was successfully deployed"}}'
-          interval: '100'
-          timeout: '3600'
-          changeCreationTimeOut: '3600'
-          abortOnChangeCreationFailure: true
-          abortOnChangeStepTimeout: true
-      - name: Output of Change Creation
-        run: echo "change-request-number = ${{ steps.create.outputs.change-request-number }} and change-request-sys-id = ${{ steps.create.outputs.change-request-sys-id }} "
-    
+   #    steps:     
+    #   - name: ServiceNow Change Approval
+     #    uses: ServiceNow/servicenow-devops-change@v3.1.0
+     #    id: create
+     #    with:
+      #     devops-integration-user-name: ${{ secrets.SN_DEVOPS_USER }}
+       #    devops-integration-user-password: ${{ secrets.SN_DEVOPS_PASSWORD }}
+       #    instance-url: ${{ secrets.SN_INSTANCE_URL }}
+       #    tool-id: ${{ secrets.SN_ORCHESTRATION_TOOL_ID }}
+      #     context-github: ${{ toJSON(github) }}
+        #   job-name: 'ServiceNow Change Approval'
+       #    change-request: '{"setCloseCode":"true","attributes":{"short_description":"Automated Software Deployment","description":"Automated Software Deployment.","assignment_group":"a715cd759f2002002920bde8132e7018","implementation_plan":"Software update is tested and results can be found in Test Summaries Tab; When the change is approved the implementation happens automated by the CICD pipeline within the change planned start and end time window.","backout_plan":"When software fails in production, the previous software release will be re-deployed.","test_plan":"Testing if the software was successfully deployed"}}'
+ #          interval: '100'
+         #  timeout: '3600'
+         #  changeCreationTimeOut: '3600'
+        #   abortOnChangeCreationFailure: true
+        #   abortOnChangeStepTimeout: true
+      # - name: Output of Change Creation
+     #    run: echo "change-request-number = ${{ steps.create.outputs.change-request-number }} and change-request-sys-id = ${{ steps.create.outputs.change-request-sys-id }} "
+
+  ServiceNowDevOpsChange:
+  # jobs that must complete successfully before this job will run
+    needs: hello
+  # type of machine to run the job on
+    runs-on: ubuntu-latest
+    name: 'ServiceNow DevOps Change'
+
+    steps:
+    - name: ServiceNow Change
+      uses: ServiceNow/servicenow-devops-change@v3.0.0
+      with:
+        # Devops Integration Token
+        devops-integration-token: ${{ secrets.SN_DEVOPS_TOKEN }}
+        # ServiceNow Instance URL
+        instance-url: ${{ secrets.SN_INSTANCE_URL }}
+        # Orchestration Tool Id
+        tool-id: ${{ secrets.SN_ORCHESTRATION_TOOL_ID }}
+        # GitHub Context
+        context-github: ${{ toJSON(github) }}
+        # Display Name of the Job
+        job-name: 'ServiceNow DevOps Change'
+        change-request: '{"attributes":{"requested_by":{"name": "Test User"},"assignment_group":{"name": "Change Approval Team"},"priority": "2","comments": "This is a sample pipeline script to be added in your change step","work_notes": "Update this to work_notes","start_date": "2023-09-07 11:59:59","end_date": "2023-09-09 11:59:59"}}'
+        # You can specify the requested_by attribute either with name or sys_id. Example: "requested_by":{"name": "Test User"} or "requested_by": "62826bf03710200044e0bfc8bcbe5df1"
+        # You can specify the assignment_group attribute either with name or sys_id. Example: "assignment_group":{"name": "Change Approval Team"} or "assignment_group": "5f721d93c0a8010e015533746de18bf9"
+        # start_date: This is the planned start date
+        # end_date: This is the planned end date
+        
   deploy:
     name: Deploy
     needs: changeApproval
