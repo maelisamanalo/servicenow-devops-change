@@ -78,7 +78,7 @@ jobs:
         
   deploy:
     name: Deploy
-    needs: changeApproval
+    needs: ServiceNowDevOpsChange
     runs-on: ubuntu-latest
 
     steps:     
